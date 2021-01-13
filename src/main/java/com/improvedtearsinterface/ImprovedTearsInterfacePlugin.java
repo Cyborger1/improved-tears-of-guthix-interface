@@ -50,7 +50,9 @@ import net.runelite.client.plugins.PluginDescriptor;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Example"
+	name = "Improved Tears Interface",
+	description = "Improves the Tears of Guthix minigame interface",
+	tags = {"Tears", "Guthix", "Tears of Guthix", "Improved", "Interface"}
 )
 public class ImprovedTearsInterfacePlugin extends Plugin
 {
