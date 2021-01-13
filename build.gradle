@@ -10,7 +10,7 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = '1.6.35'
+def runeLiteVersion = '1.6.36.2'
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
@@ -22,8 +22,8 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
 }
 
-group = 'com.example'
-version = '1.0-SNAPSHOT'
+group = 'com.improvedtearsinterface'
+version = '1.0'
 sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {
