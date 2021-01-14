@@ -132,6 +132,11 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
 		if (turnedOnDuringMinigame)
 		{
 			if (!isInTearsMinigameArea(false))
@@ -154,7 +159,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 			}
 			else if (minigameStarting)
 			{
-				if (isOnTearsStartingTile())
+				if (isPastTearsStartingTile())
 				{
 					minigameStarting = false;
 				}
@@ -226,7 +231,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				}
 			}
 
-			if (minigameEnding && isOnTearsEndingTile())
+			if (minigameEnding && isInTearsMinigameArea(false))
 			{
 				reset();
 			}
@@ -280,26 +285,14 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		return false;
 	}
 
-	private boolean isOnTearsStartingTile()
+	private boolean isPastTearsStartingTile()
 	{
 		Player lp = client.getLocalPlayer();
 		if (lp != null)
 		{
 			WorldPoint wp = lp.getWorldLocation();
-			return (wp != null && wp.getPlane() == 2
-				&& wp.getX() == 3257 && wp.getY() == 9517);
-		}
-		return false;
-	}
-
-	private boolean isOnTearsEndingTile()
-	{
-		Player lp = client.getLocalPlayer();
-		if (lp != null)
-		{
-			WorldPoint wp = lp.getWorldLocation();
-			return (wp != null && wp.getPlane() == 2
-				&& wp.getX() == 3251 && wp.getY() == 9516);
+			return (wp != null && wp.getPlane() == 2 && wp.getX() >= 3257 && wp.getX() <= 3260
+				&& wp.getY() >= 9515 && wp.getY() <= 9519);
 		}
 		return false;
 	}
