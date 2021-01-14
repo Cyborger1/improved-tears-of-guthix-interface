@@ -235,10 +235,18 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				/* DEBUG */
 				System.out.println();
 				System.out.println("current tick: " + client.getTickCount());
-				System.out.println("ticks: " + prevTicksLeft + " -> " + newTicksLeft);
+				System.out.println("ticks: " + prevTicksLeft + " -> " + newTicksLeft + " / " + maxTicks);
 				System.out.println("coll: " + prevCollected + " -> " + newCollected);
 				System.out.println("collb: " + prevCollecting + " -> " + newCollecting);
 				System.out.println("offset: " + tickOffset);
+				if (minigameStarting)
+				{
+					System.out.println("minigame starting...");
+				}
+				if (minigameEnding)
+				{
+					System.out.println("minigame ending...");
+				}
 
 				prevTicksLeft = newTicksLeft;
 				prevCollected = newCollected;
