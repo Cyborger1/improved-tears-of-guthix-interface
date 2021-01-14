@@ -63,6 +63,26 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final int GAME_TICK_LENGTH_MS = 600;
 	private static final int CLIENT_TICK_LENGTH_MS = 50;
 
+	private static final int TEARS_WP_PLANE = 2;
+	private static final int TEARS_WP_MIN_X = 3251;
+	private static final int TEARS_WP_MAX_X = 3260;
+	private static final int TEARS_WP_MIN_Y = 9515;
+	private static final int TEARS_WP_MAX_Y = 9519;
+	private static final int TEARS_WP_START_X = 3257;
+
+	private static final int TEARS_WIDGET_GROUP_ID = 276;
+	private static final int TEARS_WIDGET_CHILD_TIME_TEXT = 17;
+	private static final int TEARS_WIDGET_CHILD_WATER_TEXT = 16;
+	private static final int TEARS_WIDGET_CHILD_COUNT_TEXT = 19;
+
+	private static final int COLOR_YELLOW = 0xFFFF00;
+	private static final int COLOR_ORANGE = 0xFF9900;
+	private static final int COLOR_RED = 0xFF0000;
+	private static final int COLOR_CYAN = 0x00FFFF;
+	private static final int COLOR_AQUA = 0x00CCFF;
+	private static final int COLOR_GREEN = 0x00FF00;
+	private static final int COLOR_DARK_GREEN = 0x00CC00;
+
 	@Inject
 	private Client client;
 
@@ -184,14 +204,32 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		{
 			boolean doFlash = config.getFlashingText() && client.getTickCount() % 2 != 0;
 
-			Widget timeLeftWidget = client.getWidget(276, 17);
+			Widget timeLeftWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_TIME_TEXT);
 			int newCollected = client.getVarbitValue(VARBIT_TEARS_COLLECTED);
 			boolean newCollecting = client.getVarbitValue(VARBIT_COLLECTING) == 1;
 
 			if (timeLeftWidget != null)
 			{
-				timeLeftWidget.setText("Time Left: " + newTicksLeft + " / " + maxTicks);
-				Widget waterTextWidget = client.getWidget(276, 16);
+				timeLeftWidget.setText("<col=ffff00>Time Left:</col> " + newTicksLeft + " / " + maxTicks);
+				double part = newTicksLeft / (double) maxTicks;
+				if (part < 0.10)
+				{
+					timeLeftWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
+				}
+				else if (part < 0.25)
+				{
+					timeLeftWidget.setTextColor(COLOR_ORANGE);
+				}
+				else if (part < 0.5)
+				{
+					timeLeftWidget.setTextColor(COLOR_YELLOW);
+				}
+				else
+				{
+					timeLeftWidget.setTextColor(COLOR_GREEN);
+				}
+
+				Widget waterTextWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_WATER_TEXT);
 				if (waterTextWidget != null)
 				{
 					if (newCollecting)
@@ -200,33 +238,33 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						switch (tear)
 						{
 							case NONE:
-								waterTextWidget.setText("Not Collecting");
-								waterTextWidget.setTextColor(doFlash ? 0xFF9900 : 0xFF0000);
+								waterTextWidget.setText("Empty Tear Vein!");
+								waterTextWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
 								break;
 							case BLUE:
 								waterTextWidget.setText("<col=00ff00>Collecting</col> Blue <col=00ff00>Tears</col>");
-								waterTextWidget.setTextColor(doFlash ? 0x00CCFF : 0x00FFFF);
+								waterTextWidget.setTextColor(doFlash ? COLOR_AQUA : COLOR_CYAN);
 								break;
 							case GREEN:
 								waterTextWidget.setText("<col=ff0000>Collecting</col> Green <col=ff0000>Tears</col>");
-								waterTextWidget.setTextColor(doFlash ? 0x00CC00 : 0x00FF00);
+								waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
 								break;
 						}
 					}
 					else if (minigameStarting)
 					{
 						waterTextWidget.setText("Get Ready!");
-						waterTextWidget.setTextColor(doFlash ? 0x00FF00 : 0xFFFF00);
+						waterTextWidget.setTextColor(doFlash ? COLOR_GREEN : COLOR_YELLOW);
 					}
 					else if (minigameEnding)
 					{
 						waterTextWidget.setText("Time Up!");
-						waterTextWidget.setTextColor(doFlash ? 0xFF0000 : 0xFFFF00);
+						waterTextWidget.setTextColor(doFlash ? COLOR_RED : COLOR_YELLOW);
 					}
 					else
 					{
 						waterTextWidget.setText("Not Collecting");
-						waterTextWidget.setTextColor(0xFFFF00);
+						waterTextWidget.setTextColor(COLOR_YELLOW);
 					}
 				}
 			}
@@ -278,9 +316,10 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		if (lp != null)
 		{
 			WorldPoint wp = lp.getWorldLocation();
-			return (wp != null && wp.getPlane() == 2
-				&& wp.getX() >= (includeExterior ? 3251 : 3252)
-				&& wp.getX() <= 3260 && wp.getY() >= 9515 && wp.getY() <= 9519);
+			return (wp != null && wp.getPlane() == TEARS_WP_PLANE
+				&& wp.getX() >= TEARS_WP_MIN_X + (includeExterior ? 0 : 1)
+				&& wp.getX() <= TEARS_WP_MAX_X
+				&& wp.getY() >= TEARS_WP_MIN_Y && wp.getY() <= TEARS_WP_MAX_Y);
 		}
 		return false;
 	}
@@ -291,14 +330,16 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		if (lp != null)
 		{
 			WorldPoint wp = lp.getWorldLocation();
-			return (wp != null && wp.getPlane() == 2 && wp.getX() >= 3257 && wp.getX() <= 3260
-				&& wp.getY() >= 9515 && wp.getY() <= 9519);
+			return (wp != null && wp.getPlane() == TEARS_WP_PLANE
+				&& wp.getX() >= TEARS_WP_START_X && wp.getX() <= TEARS_WP_MAX_X
+				&& wp.getY() >= TEARS_WP_MIN_Y && wp.getY() <= TEARS_WP_MAX_Y);
 		}
 		return false;
 	}
 
 	private TearType getAdjacentTearType()
 	{
+		// Only ever one tear thing adjacent to the player so this logic should be fine
 		Player lp = client.getLocalPlayer();
 
 		if (lp != null)
