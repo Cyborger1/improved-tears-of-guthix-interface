@@ -352,7 +352,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 			toCheck[2] = wp.dy(1);
 			toCheck[3] = wp.dy(-1);
 
-			Tile[][] tiles = client.getScene().getTiles()[client.getPlane()];
+			Tile[][] tiles = client.getScene().getTiles()[wp.getPlane()];
 			for (WorldPoint target : toCheck)
 			{
 				final LocalPoint localTarget = LocalPoint.fromWorld(client, target);
