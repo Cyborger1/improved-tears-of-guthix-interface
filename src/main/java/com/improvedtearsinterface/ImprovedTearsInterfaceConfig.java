@@ -29,8 +29,19 @@ package com.improvedtearsinterface;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
+import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("improvedtearsinterface")
 public interface ImprovedTearsInterfaceConfig extends Config
 {
+	@ConfigItem(
+		keyName = "flashingText",
+		name = "Flashing Text",
+		description = "Adds some flashiness to the collecting text",
+		position = 1
+	)
+	default boolean getFlashingText()
+	{
+		return true;
+	}
 }
