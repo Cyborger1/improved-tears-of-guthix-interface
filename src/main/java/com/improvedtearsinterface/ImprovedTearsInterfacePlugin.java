@@ -134,7 +134,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	{
 		if (turnedOnDuringMinigame)
 		{
-			if (!isInTearsMinigameArea())
+			if (!isInTearsMinigameArea(false))
 			{
 				reset();
 			}
