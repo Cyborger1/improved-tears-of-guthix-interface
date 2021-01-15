@@ -29,6 +29,7 @@ package com.improvedtearsinterface;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.util.ColorUtil;
 
 @Slf4j
 @PluginDescriptor(
@@ -210,7 +212,8 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 
 			if (timeLeftWidget != null)
 			{
-				timeLeftWidget.setText("<col=ffff00>Time Left:</col> " + newTicksLeft + " / " + maxTicks);
+				timeLeftWidget.setText(ColorUtil.wrapWithColorTag("Time Left: ", Color.YELLOW)
+					+ newTicksLeft + " / " + maxTicks);
 				double part = newTicksLeft / (double) maxTicks;
 				if (part < 0.10)
 				{
@@ -242,11 +245,13 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 								waterTextWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
 								break;
 							case BLUE:
-								waterTextWidget.setText("<col=00ff00>Collecting</col> Blue <col=00ff00>Tears</col>");
+								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.GREEN)
+									+ "Blue" + ColorUtil.wrapWithColorTag(" Tears", Color.GREEN));
 								waterTextWidget.setTextColor(doFlash ? COLOR_AQUA : COLOR_CYAN);
 								break;
 							case GREEN:
-								waterTextWidget.setText("<col=ff0000>Collecting</col> Green <col=ff0000>Tears</col>");
+								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.RED)
+									+ "Green" + ColorUtil.wrapWithColorTag(" Tears", Color.RED));
 								waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
 								break;
 						}
