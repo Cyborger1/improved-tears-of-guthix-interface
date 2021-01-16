@@ -83,8 +83,8 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final int COLOR_LIGHT_ORANGE = 0xFF9900;
 	private static final int COLOR_ORANGE = 0xFF6600;
 	private static final int COLOR_RED = 0xFF0000;
-	private static final int COLOR_CYAN = 0x00FFFF;
-	private static final int COLOR_AQUA = 0x00CCFF;
+	private static final int COLOR_LIGHT_BLUE = 0x00BBFF;
+	private static final int COLOR_BLUE = 0x0066FF;
 	private static final int COLOR_GREEN = 0x00FF00;
 	private static final int COLOR_DARK_GREEN = 0x00CC00;
 
@@ -256,7 +256,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 							case BLUE:
 								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.GREEN)
 									+ "Blue" + ColorUtil.wrapWithColorTag(" Tears", Color.GREEN));
-								waterTextWidget.setTextColor(doFlash ? COLOR_AQUA : COLOR_CYAN);
+								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_BLUE : COLOR_BLUE);
 								break;
 							case GREEN:
 								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.RED)
