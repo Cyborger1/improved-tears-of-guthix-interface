@@ -360,11 +360,11 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		{
 			WorldPoint wp = lp.getWorldLocation();
 
-			WorldPoint[] toCheck = new WorldPoint[4];
+			// Don't need to check dx(-1) as there is no tears on the western side
+			WorldPoint[] toCheck = new WorldPoint[3];
 			toCheck[0] = wp.dx(1);
-			toCheck[1] = wp.dx(-1);
-			toCheck[2] = wp.dy(1);
-			toCheck[3] = wp.dy(-1);
+			toCheck[1] = wp.dy(1);
+			toCheck[2] = wp.dy(-1);
 
 			Tile[][] tiles = client.getScene().getTiles()[wp.getPlane()];
 			for (WorldPoint target : toCheck)
