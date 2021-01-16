@@ -273,7 +273,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						}
 						else
 						{
-							waterTextWidget.setText("Starting in: " + (minigameStarting - 1) + " ticks");
+							waterTextWidget.setText("Starting in: " + minigameStarting + " ticks");
 						}
 
 						waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
