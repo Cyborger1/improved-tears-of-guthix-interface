@@ -120,7 +120,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		reset();
-		if (isInTearsMinigameArea(false))
+		if (isInTearsMinigameArea() && client.getVarbitValue(VARBIT_TICKS_LEFT) > 0)
 		{
 			turnedOnDuringMinigame = true;
 		}
