@@ -298,7 +298,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				System.out.println("disp ticks: " + displayedTicksLeft);
 				if (minigameStarting > 0)
 				{
-					System.out.println("minigame starting...");
+					System.out.println("minigame starting... (" + minigameStarting + ")");
 				}
 				if (minigameEnding)
 				{
