@@ -37,7 +37,7 @@ public interface ImprovedTearsInterfaceConfig extends Config
 	@ConfigItem(
 		keyName = "flashingText",
 		name = "Flashing Text",
-		description = "Adds some flashiness to the collecting text",
+		description = "Flash the interface text on every other tick",
 		position = 1
 	)
 	default boolean getFlashingText()
