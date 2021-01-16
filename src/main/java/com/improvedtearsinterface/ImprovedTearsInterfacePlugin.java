@@ -267,7 +267,15 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 					}
 					else if (minigameStarting > 0)
 					{
-						waterTextWidget.setText("Get Ready!");
+						if (minigameStarting >= TICKS_FROM_JUNAS_TAIL)
+						{
+							waterTextWidget.setText("Get Ready!");
+						}
+						else
+						{
+							waterTextWidget.setText("Starting in: " + (minigameStarting - 1) + " ticks");
+						}
+
 						waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
 					}
 					else if (minigameEnding)
