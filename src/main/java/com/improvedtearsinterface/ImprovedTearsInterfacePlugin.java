@@ -238,22 +238,29 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				boolean doFlash = config.getFlashingText() && client.getTickCount() % 2 != 0;
 
 				timeLeftWidget.setText(String.format(TICK_LEFT_STRING, displayedTicksLeft, maxTicks));
-				double part = displayedTicksLeft / (double) maxTicks;
-				if (part < 0.15)
+				if (displayedTicksLeft > 0 && maxTicks > 0)
 				{
-					timeLeftWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
-				}
-				else if (part < 0.3)
-				{
-					timeLeftWidget.setTextColor(COLOR_LIGHT_ORANGE);
-				}
-				else if (part < 0.6)
-				{
-					timeLeftWidget.setTextColor(COLOR_YELLOW);
+					double part = displayedTicksLeft / (double) maxTicks;
+					if (part < 0.15)
+					{
+						timeLeftWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
+					}
+					else if (part < 0.3)
+					{
+						timeLeftWidget.setTextColor(COLOR_LIGHT_ORANGE);
+					}
+					else if (part < 0.6)
+					{
+						timeLeftWidget.setTextColor(COLOR_YELLOW);
+					}
+					else
+					{
+						timeLeftWidget.setTextColor(COLOR_GREEN);
+					}
 				}
 				else
 				{
-					timeLeftWidget.setTextColor(COLOR_GREEN);
+					timeLeftWidget.setTextColor(COLOR_RED);
 				}
 
 				Widget waterTextWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_WATER_TEXT);
