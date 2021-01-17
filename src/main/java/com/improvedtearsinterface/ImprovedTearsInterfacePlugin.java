@@ -86,6 +86,21 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final int COLOR_GREEN = 0x00FF00;
 	private static final int COLOR_DARK_GREEN = 0x00CC00;
 
+	private static final Set<Integer> NO_TEARS_IDS = ImmutableSet.of(ObjectID.ABSENCE_OF_TEARS, ObjectID.ABSENCE_OF_TEARS_6667);
+	private static final Set<Integer> BLUE_TEARS_IDS = ImmutableSet.of(ObjectID.BLUE_TEARS, ObjectID.BLUE_TEARS_6665);
+	private static final Set<Integer> GREEN_TEARS_IDS = ImmutableSet.of(ObjectID.GREEN_TEARS, ObjectID.GREEN_TEARS_6666);
+
+	private static final String TICK_LEFT_STRING = ColorUtil.wrapWithColorTag("Ticks Left:", Color.YELLOW) + " %d / %d";
+	private static final String NOT_COLLECTING_STRING = "Not Collecting";
+	private static final String EMPTY_VEIN_STRING = "Empty Tear Vein!";
+	private static final String BLUE_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.GREEN)
+		+ " Blue " + ColorUtil.wrapWithColorTag("Tears", Color.GREEN);
+	private static final String GREEN_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.RED)
+		+ " Green " + ColorUtil.wrapWithColorTag("Tears", Color.RED);
+	private static final String MINIGAME_STARTING_STRING = "Get Ready!";
+	private static final String MINIGAME_STARTING_IN_STRING = "Starting in: %d ticks";
+	private static final String MINIGAME_ENDING_STRING = "Time Up!";
+
 	@Inject
 	private Client client;
 
@@ -109,21 +124,6 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 
 	private boolean turnedOnDuringMinigame = false;
 	private boolean inTearsMinigame = false;
-
-	private static final Set<Integer> NO_TEARS_IDS = ImmutableSet.of(ObjectID.ABSENCE_OF_TEARS, ObjectID.ABSENCE_OF_TEARS_6667);
-	private static final Set<Integer> BLUE_TEARS_IDS = ImmutableSet.of(ObjectID.BLUE_TEARS, ObjectID.BLUE_TEARS_6665);
-	private static final Set<Integer> GREEN_TEARS_IDS = ImmutableSet.of(ObjectID.GREEN_TEARS, ObjectID.GREEN_TEARS_6666);
-
-	private static final String TICK_LEFT_STRING = ColorUtil.wrapWithColorTag("Ticks Left:", Color.YELLOW) + " %d / %d";
-	private static final String NOT_COLLECTING_STRING = "Not Collecting";
-	private static final String EMPTY_VEIN_STRING = "Empty Tear Vein!";
-	private static final String BLUE_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.GREEN)
-		+ " Blue " + ColorUtil.wrapWithColorTag("Tears", Color.GREEN);
-	private static final String GREEN_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.RED)
-		+ " Green " + ColorUtil.wrapWithColorTag("Tears", Color.RED);
-	private static final String MINIGAME_STARTING_STRING = "Get Ready!";
-	private static final String MINIGAME_STARTING_IN_STRING = "Starting in: %d ticks";
-	private static final String MINIGAME_ENDING_STRING = "Time Up!";
 
 	@Provides
 	ImprovedTearsInterfaceConfig provideConfig(ConfigManager configManager)
