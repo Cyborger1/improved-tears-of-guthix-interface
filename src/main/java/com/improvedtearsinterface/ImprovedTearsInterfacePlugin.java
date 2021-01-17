@@ -32,6 +32,7 @@ import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.Set;
 import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.DecorativeObject;
@@ -62,17 +63,14 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final int VARBIT_TEARS_COLLECTED = 455;
 	private static final int VARBIT_COLLECTING = 453;
 
-	private static final int GAME_TICK_LENGTH_MS = 600;
-	private static final int CLIENT_TICK_LENGTH_MS = 50;
-
 	private static final int TICKS_FROM_JUNAS_TAIL = 9;
+	private static final int TICKS_FOR_START_TIMER = 6;
 
 	private static final int TEARS_WP_PLANE = 2;
 	private static final int TEARS_WP_MIN_X = 3251;
 	private static final int TEARS_WP_MAX_X = 3260;
 	private static final int TEARS_WP_MIN_Y = 9515;
 	private static final int TEARS_WP_MAX_Y = 9519;
-	private static final int TEARS_WP_START_X = 3257;
 
 	private static final int TEARS_WIDGET_GROUP_ID = 276;
 	private static final int TEARS_WIDGET_CHILD_TIME_TEXT = 17;
@@ -94,21 +92,38 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	@Inject
 	private ImprovedTearsInterfaceConfig config;
 
+	@Getter
 	private int maxTicks = 0;
+	@Getter
 	private int minigameStarting = 0;
+	@Getter
 	private boolean minigameEnding = false;
+	@Getter
 	private int prevTicksLeft = 0;
+	@Getter
 	private int displayedTicksLeft = 0;
-	private int prevCollected = 0;
-	private boolean prevCollecting = false;
+	@Getter
+	private int tearsCollected = 0;
+	@Getter
+	private TearCollectingState collectingState = TearCollectingState.NOT_COLLECTING;
 
 	private boolean turnedOnDuringMinigame = false;
-
 	private boolean inTearsMinigame = false;
 
 	private static final Set<Integer> NO_TEARS_IDS = ImmutableSet.of(ObjectID.ABSENCE_OF_TEARS, ObjectID.ABSENCE_OF_TEARS_6667);
 	private static final Set<Integer> BLUE_TEARS_IDS = ImmutableSet.of(ObjectID.BLUE_TEARS, ObjectID.BLUE_TEARS_6665);
 	private static final Set<Integer> GREEN_TEARS_IDS = ImmutableSet.of(ObjectID.GREEN_TEARS, ObjectID.GREEN_TEARS_6666);
+
+	private static final String TICK_LEFT_STRING = ColorUtil.wrapWithColorTag("Ticks Left:", Color.YELLOW) + " %d / %d";
+	private static final String NOT_COLLECTING_STRING = "Not Collecting";
+	private static final String EMPTY_VEIN_STRING = "Empty Tear Vein!";
+	private static final String BLUE_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.GREEN)
+		+ " Blue " + ColorUtil.wrapWithColorTag("Tears", Color.GREEN);
+	private static final String GREEN_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.RED)
+		+ " Green " + ColorUtil.wrapWithColorTag("Tears", Color.RED);
+	private static final String MINIGAME_STARTING_STRING = "Get Ready!";
+	private static final String MINIGAME_STARTING_IN_STRING = "Starting in: %d ticks";
+	private static final String MINIGAME_ENDING_STRING = "Time Up!";
 
 	@Provides
 	ImprovedTearsInterfaceConfig provideConfig(ConfigManager configManager)
@@ -139,10 +154,10 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		minigameEnding = false;
 		prevTicksLeft = 0;
 		displayedTicksLeft = 0;
-		prevCollected = 0;
-		prevCollecting = false;
+		tearsCollected = 0;
 		inTearsMinigame = false;
 		turnedOnDuringMinigame = false;
+		collectingState = TearCollectingState.NOT_COLLECTING;
 	}
 
 	@Subscribe
@@ -209,20 +224,20 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		{
 			minigameEnding = true;
 			prevTicksLeft = 0;
+			displayedTicksLeft = 0;
 		}
 
 		if (inTearsMinigame)
 		{
-			boolean doFlash = config.getFlashingText() && client.getTickCount() % 2 != 0;
-
 			Widget timeLeftWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_TIME_TEXT);
-			int newCollected = client.getVarbitValue(VARBIT_TEARS_COLLECTED);
-			boolean newCollecting = client.getVarbitValue(VARBIT_COLLECTING) == 1;
+			tearsCollected = client.getVarbitValue(VARBIT_TEARS_COLLECTED);
+			collectingState = getCurrentCollectingState();
 
 			if (timeLeftWidget != null)
 			{
-				timeLeftWidget.setText(ColorUtil.wrapWithColorTag("Ticks Left: ", Color.YELLOW)
-					+ displayedTicksLeft + " / " + maxTicks);
+				boolean doFlash = config.getFlashingText() && client.getTickCount() % 2 != 0;
+
+				timeLeftWidget.setText(String.format(TICK_LEFT_STRING, displayedTicksLeft, maxTicks));
 				double part = displayedTicksLeft / (double) maxTicks;
 				if (part < 0.15)
 				{
@@ -244,49 +259,45 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				Widget waterTextWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_WATER_TEXT);
 				if (waterTextWidget != null)
 				{
-					if (newCollecting)
+					if (minigameStarting > 0)
 					{
-						TearType tear = getAdjacentTearType();
-						switch (tear)
+						if (minigameStarting >= TICKS_FOR_START_TIMER)
 						{
-							case NONE:
-								waterTextWidget.setText("Empty Tear Vein!");
-								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_ORANGE : COLOR_ORANGE);
-								break;
-							case BLUE:
-								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.GREEN)
-									+ "Blue" + ColorUtil.wrapWithColorTag(" Tears", Color.GREEN));
-								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_BLUE : COLOR_BLUE);
-								break;
-							case GREEN:
-								waterTextWidget.setText(ColorUtil.wrapWithColorTag("Collecting ", Color.RED)
-									+ "Green" + ColorUtil.wrapWithColorTag(" Tears", Color.RED));
-								waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
-								break;
-						}
-					}
-					else if (minigameStarting > 0)
-					{
-						if (minigameStarting >= TICKS_FROM_JUNAS_TAIL)
-						{
-							waterTextWidget.setText("Get Ready!");
+							waterTextWidget.setText(MINIGAME_STARTING_STRING);
 						}
 						else
 						{
-							waterTextWidget.setText("Starting in: " + minigameStarting + " ticks");
+							waterTextWidget.setText(String.format(MINIGAME_STARTING_IN_STRING, minigameStarting));
 						}
 
 						waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
 					}
 					else if (minigameEnding)
 					{
-						waterTextWidget.setText("Time Up!");
+						waterTextWidget.setText(MINIGAME_ENDING_STRING);
 						waterTextWidget.setTextColor(doFlash ? COLOR_ORANGE : COLOR_RED);
 					}
 					else
 					{
-						waterTextWidget.setText("Not Collecting");
-						waterTextWidget.setTextColor(COLOR_YELLOW);
+						switch (collectingState)
+						{
+							case BLUE_VEIN:
+								waterTextWidget.setText(BLUE_VEIN_STRING);
+								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_BLUE : COLOR_BLUE);
+								break;
+							case GREEN_VEIN:
+								waterTextWidget.setText(GREEN_VEIN_STRING);
+								waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
+								break;
+							case EMPTY_VEIN:
+								waterTextWidget.setText(EMPTY_VEIN_STRING);
+								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_ORANGE : COLOR_ORANGE);
+								break;
+							default:
+								waterTextWidget.setText(NOT_COLLECTING_STRING);
+								waterTextWidget.setTextColor(COLOR_YELLOW);
+								break;
+						}
 					}
 				}
 			}
@@ -297,34 +308,9 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 			}
 			else
 			{
-				/* DEBUG */
-				System.out.println();
-				System.out.println("current tick: " + client.getTickCount());
-				System.out.println("ticks: " + prevTicksLeft + " -> " + newTicksLeft + " / " + maxTicks);
-				System.out.println("coll: " + prevCollected + " -> " + newCollected);
-				System.out.println("collb: " + prevCollecting + " -> " + newCollecting);
-				System.out.println("disp ticks: " + displayedTicksLeft);
-				if (minigameStarting > 0)
-				{
-					System.out.println("minigame starting... (" + minigameStarting + ")");
-				}
-				if (minigameEnding)
-				{
-					System.out.println("minigame ending...");
-				}
-
 				prevTicksLeft = newTicksLeft;
-				prevCollected = newCollected;
-				prevCollecting = newCollecting;
 			}
 		}
-	}
-
-	private enum TearType
-	{
-		NONE,
-		GREEN,
-		BLUE
 	}
 
 	private boolean isInTearsMinigameArea()
@@ -346,21 +332,13 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		return false;
 	}
 
-	private boolean isPastTearsStartingTile()
+	private TearCollectingState getCurrentCollectingState()
 	{
-		Player lp = client.getLocalPlayer();
-		if (lp != null)
+		if (client.getVarbitValue(VARBIT_COLLECTING) == 0)
 		{
-			WorldPoint wp = lp.getWorldLocation();
-			return (wp != null && wp.getPlane() == TEARS_WP_PLANE
-				&& wp.getX() >= TEARS_WP_START_X && wp.getX() <= TEARS_WP_MAX_X
-				&& wp.getY() >= TEARS_WP_MIN_Y && wp.getY() <= TEARS_WP_MAX_Y);
+			return TearCollectingState.NOT_COLLECTING;
 		}
-		return false;
-	}
 
-	private TearType getAdjacentTearType()
-	{
 		// Only ever one tear thing adjacent to the player so this logic should be fine
 		Player lp = client.getLocalPlayer();
 
@@ -386,21 +364,21 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						int id = obj.getId();
 						if (NO_TEARS_IDS.contains(id))
 						{
-							return TearType.NONE;
+							return TearCollectingState.EMPTY_VEIN;
 						}
 						else if (BLUE_TEARS_IDS.contains(id))
 						{
-							return TearType.BLUE;
+							return TearCollectingState.BLUE_VEIN;
 						}
 						else if (GREEN_TEARS_IDS.contains(id))
 						{
-							return TearType.GREEN;
+							return TearCollectingState.GREEN_VEIN;
 						}
 					}
 				}
 			}
 		}
 
-		return TearType.NONE;
+		return TearCollectingState.EMPTY_VEIN;
 	}
 }
