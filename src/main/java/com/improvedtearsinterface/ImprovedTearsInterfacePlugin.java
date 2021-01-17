@@ -144,6 +144,23 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
+		// Reset interface
+		if (inTearsMinigame)
+		{
+			Widget timeLeftWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_TIME_TEXT);
+			if (timeLeftWidget != null)
+			{
+				timeLeftWidget.setText("Time Left");
+				timeLeftWidget.setTextColor(COLOR_YELLOW);
+			}
+			Widget waterTextWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_WATER_TEXT);
+			if (waterTextWidget != null)
+			{
+				waterTextWidget.setText("Water Collected");
+				waterTextWidget.setTextColor(COLOR_YELLOW);
+			}
+		}
+
 		reset();
 	}
 
