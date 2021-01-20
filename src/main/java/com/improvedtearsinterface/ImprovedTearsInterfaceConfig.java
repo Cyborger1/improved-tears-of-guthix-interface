@@ -36,12 +36,12 @@ public interface ImprovedTearsInterfaceConfig extends Config
 {
 	@ConfigItem(
 		keyName = "flashingText",
-		name = "Flashing Text",
-		description = "Flash the interface text on every other tick",
+		name = "Flashing Interface Text",
+		description = "Enables some flashiness for some of the interface's text on every other tick",
 		position = 1
 	)
 	default boolean getFlashingText()
 	{
-		return true;
+		return false;
 	}
 }

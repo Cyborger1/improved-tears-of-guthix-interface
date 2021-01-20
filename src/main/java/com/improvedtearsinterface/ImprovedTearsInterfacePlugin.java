@@ -54,7 +54,7 @@ import net.runelite.client.util.ColorUtil;
 @Slf4j
 @PluginDescriptor(
 	name = "Improved Tears Interface",
-	description = "Improves the Tears of Guthix minigame interface",
+	description = "Improves the Tears of Guthix minigame interface with a proper tick timer and current action indicator",
 	tags = {"Tears", "Guthix", "Tears of Guthix", "Improved", "Interface"}
 )
 public class ImprovedTearsInterfacePlugin extends Plugin
@@ -307,7 +307,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						{
 							case BLUE_VEIN:
 								waterTextWidget.setText(BLUE_VEIN_STRING);
-								waterTextWidget.setTextColor(doFlash ? COLOR_LIGHT_BLUE : COLOR_BLUE);
+								waterTextWidget.setTextColor(doFlash ? COLOR_BLUE : COLOR_LIGHT_BLUE);
 								break;
 							case GREEN_VEIN:
 								waterTextWidget.setText(GREEN_VEIN_STRING);
