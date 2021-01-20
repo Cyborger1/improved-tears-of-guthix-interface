@@ -98,7 +98,8 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final String GREEN_VEIN_STRING = ColorUtil.wrapWithColorTag("Collecting", Color.RED)
 		+ " Green " + ColorUtil.wrapWithColorTag("Tears", Color.RED);
 	private static final String MINIGAME_STARTING_STRING = "Get Ready!";
-	private static final String MINIGAME_STARTING_IN_STRING = "Starting in: %d ticks";
+	private static final String MINIGAME_STARTING_IN_SINGULAR_STRING = "Starting in: %d tick";
+	private static final String MINIGAME_STARTING_IN_PLURAL_STRING = "Starting in: %d ticks";
 	private static final String MINIGAME_ENDING_STRING = "Time Up!";
 
 	@Inject
@@ -291,7 +292,14 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						}
 						else
 						{
-							waterTextWidget.setText(String.format(MINIGAME_STARTING_IN_STRING, minigameStarting));
+							if (minigameStarting == 1)
+							{
+								waterTextWidget.setText(String.format(MINIGAME_STARTING_IN_SINGULAR_STRING, minigameStarting));
+							}
+							else
+							{
+								waterTextWidget.setText(String.format(MINIGAME_STARTING_IN_PLURAL_STRING, minigameStarting));
+							}
 						}
 
 						waterTextWidget.setTextColor(doFlash ? COLOR_DARK_GREEN : COLOR_GREEN);
