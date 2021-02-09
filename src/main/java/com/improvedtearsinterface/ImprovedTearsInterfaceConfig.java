@@ -36,12 +36,23 @@ public interface ImprovedTearsInterfaceConfig extends Config
 {
 	@ConfigItem(
 		keyName = "flashingText",
-		name = "Flashing Interface Text",
+		name = "Flashing interface text",
 		description = "Enables some flashiness for some of the interface's text on every other tick",
 		position = 1
 	)
 	default boolean getFlashingText()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "showPlusMinusOnCollect",
+		name = "Show +1/-1 when collecting",
+		description = "Shows a floating bit of text next to the tears counter when collecting",
+		position = 2
+	)
+	default boolean showPlusMinusOnCollect()
+	{
+		return true;
 	}
 }

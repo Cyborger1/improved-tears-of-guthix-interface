@@ -27,9 +27,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package com.improvedtearsinterface;
 
+import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
 import java.awt.Color;
+import java.time.Instant;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.Getter;
@@ -49,6 +51,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
 
 @Slf4j
@@ -72,10 +75,10 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	private static final int TEARS_WP_MIN_Y = 9515;
 	private static final int TEARS_WP_MAX_Y = 9519;
 
-	private static final int TEARS_WIDGET_GROUP_ID = 276;
-	private static final int TEARS_WIDGET_CHILD_TIME_TEXT = 17;
-	private static final int TEARS_WIDGET_CHILD_WATER_TEXT = 16;
-	private static final int TEARS_WIDGET_CHILD_COUNT_TEXT = 19;
+	static final int TEARS_WIDGET_GROUP_ID = 276;
+	static final int TEARS_WIDGET_CHILD_TIME_TEXT = 17;
+	static final int TEARS_WIDGET_CHILD_WATER_TEXT = 16;
+	static final int TEARS_WIDGET_CHILD_COUNT_TEXT = 19;
 
 	private static final int COLOR_YELLOW = 0xFFFF00;
 	private static final int COLOR_LIGHT_ORANGE = 0xFF9900;
@@ -108,6 +111,12 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	@Inject
 	private ImprovedTearsInterfaceConfig config;
 
+	@Inject
+	private TearsPlusMinusOverlay overlay;
+
+	@Inject
+	private OverlayManager overlayManager;
+
 	@Getter
 	private int maxTicks = 0;
 	@Getter
@@ -115,13 +124,15 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 	@Getter
 	private boolean minigameEnding = false;
 	@Getter
-	private int prevTicksLeft = 0;
+	private int ticksLeft = 0;
 	@Getter
 	private int displayedTicksLeft = 0;
 	@Getter
 	private int tearsCollected = 0;
 	@Getter
 	private TearCollectingState collectingState = TearCollectingState.NOT_COLLECTING;
+	@Getter
+	private EvictingQueue<DeltaInstantPair> deltaInstantQueue = EvictingQueue.create(10);
 
 	private boolean turnedOnDuringMinigame = false;
 	private boolean inTearsMinigame = false;
@@ -140,6 +151,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		{
 			turnedOnDuringMinigame = true;
 		}
+		overlayManager.add(overlay);
 	}
 
 	@Override
@@ -160,9 +172,15 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				waterTextWidget.setText("Water Collected");
 				waterTextWidget.setTextColor(COLOR_YELLOW);
 			}
+			Widget tearsCountWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_COUNT_TEXT);
+			if (tearsCountWidget != null)
+			{
+				tearsCountWidget.setTextColor(COLOR_YELLOW);
+			}
 		}
 
 		reset();
+		overlayManager.remove(overlay);
 	}
 
 	private void reset()
@@ -170,12 +188,13 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 		maxTicks = 0;
 		minigameStarting = 0;
 		minigameEnding = false;
-		prevTicksLeft = 0;
+		ticksLeft = 0;
 		displayedTicksLeft = 0;
 		tearsCollected = 0;
 		inTearsMinigame = false;
 		turnedOnDuringMinigame = false;
 		collectingState = TearCollectingState.NOT_COLLECTING;
+		deltaInstantQueue.clear();
 	}
 
 	@Subscribe
@@ -213,7 +232,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 			inTearsMinigame = true;
 
 			// Going from 0 -> Starting amount
-			if (prevTicksLeft == 0)
+			if (ticksLeft == 0)
 			{
 				maxTicks = newTicksLeft;
 				displayedTicksLeft = newTicksLeft;
@@ -226,7 +245,7 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 					minigameStarting--;
 				}
 			}
-			else if (newTicksLeft == prevTicksLeft)
+			else if (newTicksLeft == ticksLeft)
 			{
 				if (displayedTicksLeft > 0)
 				{
@@ -238,17 +257,17 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 				displayedTicksLeft = newTicksLeft;
 			}
 		}
-		else if (prevTicksLeft > 0)
+		else if (ticksLeft > 0)
 		{
 			minigameEnding = true;
-			prevTicksLeft = 0;
+			ticksLeft = 0;
 			displayedTicksLeft = 0;
 		}
 
 		if (inTearsMinigame)
 		{
 			Widget timeLeftWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_TIME_TEXT);
-			tearsCollected = client.getVarbitValue(VARBIT_TEARS_COLLECTED);
+			final int newTearsCollected = client.getVarbitValue(VARBIT_TEARS_COLLECTED);
 			collectingState = getCurrentCollectingState();
 
 			if (timeLeftWidget != null)
@@ -332,6 +351,25 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 						}
 					}
 				}
+
+				final int tearsDiff = newTearsCollected - tearsCollected;
+				deltaInstantQueue.add(DeltaInstantPair.builder().delta(tearsDiff).time(Instant.now()).build());
+				Widget tearsCountWidget = client.getWidget(TEARS_WIDGET_GROUP_ID, TEARS_WIDGET_CHILD_COUNT_TEXT);
+				if (tearsCountWidget != null)
+				{
+					if (tearsDiff > 0)
+					{
+						tearsCountWidget.setTextColor(COLOR_GREEN);
+					}
+					else if (tearsDiff < 0)
+					{
+						tearsCountWidget.setTextColor(COLOR_RED);
+					}
+					else
+					{
+						tearsCountWidget.setTextColor(COLOR_YELLOW);
+					}
+				}
 			}
 
 			if (minigameEnding && !isInTearsMinigameArea(false))
@@ -340,7 +378,8 @@ public class ImprovedTearsInterfacePlugin extends Plugin
 			}
 			else
 			{
-				prevTicksLeft = newTicksLeft;
+				ticksLeft = newTicksLeft;
+				tearsCollected = newTearsCollected;
 			}
 		}
 	}
